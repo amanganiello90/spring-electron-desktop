@@ -1,0 +1,73 @@
+{
+  "name": "spring-electron-desktop",
+  "version": "1.0.0",
+  "description": "Client della biglietteria con electron",
+  "main": "main.js",
+  "repository": "https://github.com/amanganiello90/spring-electron-desktop",
+  "author": "Electron Desktop Technology",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "electron": "electron-forge start",
+    "package": "electron-forge package",
+    "make-mac": "electron-forge make",
+    "win": "electron-builder build --win --ia32 --publish never",
+    "publish": "set GH_TOKEN=<your-token> &&electron-builder build --win --ia32 --publish always"
+  },
+  "license": "ISC",
+  "build": {
+    "productName": "spring-electron-desktop",
+    "npmRebuild": "false",
+    "asar": true,
+    "directories": {
+      "output": "out"
+    },
+    "win": {
+      "icon": "icons/example.png"
+    }
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "icon": "icons/example"
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "spring_electron_desktop"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "6.0.0-beta.64",
+    "@electron-forge/maker-deb": "6.0.0-beta.64",
+    "@electron-forge/maker-rpm": "6.0.0-beta.64",
+    "@electron-forge/maker-squirrel": "6.0.0-beta.64",
+    "@electron-forge/maker-zip": "6.0.0-beta.64",
+    "electron": "19.0.4",
+    "electron-builder": "23.0.3"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "1.0.0",
+    "electron-updater": "5.0.1",
+    "jquery": "3.6.0",
+    "node-port-check": "2.0.1",
+    "request": "2.88.2"
+  }
+}
