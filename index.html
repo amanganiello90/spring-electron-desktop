@@ -1,82 +1,60 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <meta charset="UTF-8">
-    <title>spring-electron-desktop</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spring Electron console</title>
+<style>
+body {background-color: #3232da;font-family: Arial, Helvetica, sans-serif;}
+* {box-sizing: border-box;}
 
-    <style>
-        body {
-            overflow: hidden;
-            margin: 0;
-            padding: 0;
-        }
-        #loading {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            z-index: 1;
-            width: 120px;
-            height: 120px;
-            margin: -76px 0 0 -76px;
-            border: 16px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 16px solid #3498db;
-            -webkit-animation: spin 2s linear infinite;
-            animation: spin 2s linear infinite;
-        }
+textarea {
+  text-align: center;
+  width: 100%;
+  height: 70vh;
+  padding: 15px;
+  border: 1px solid;
+  border-radius: 10px;
+  box-sizing: border-box;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  resize: vertical;
+}
 
-        @-webkit-keyframes spin {
-            0% {
-                -webkit-transform: rotate(0deg);
-            }
+input[type=button] {
+  background-color: #04AA6D;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
 
-            100% {
-                -webkit-transform: rotate(360deg);
-            }
-        }
+input[type=button]:hover {
+  background-color: #45a049;
+}
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
+.container {
+  border-radius: 5px;
+  padding: 30px;
+}
 
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-        #serverLog {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: none;
-            overflow: auto;
-        }
-
-        .jarApp {
-            display: flex !important;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
-
-        .jarAppHide {
-            flex: 0 1;
-            width: 0px;
-            height: 0px;
-        }
-    </style>
+</style>
 </head>
-
 <body>
-    <div id="loading"></div>
 
-    <div id="serverLog"></div>
-    <webview id="jarAppId" class="jarApp"></webview>
+
+<div class="container">
 
     <script>
         require('./renderer.js');
     </script>
-</body>
 
+    <textarea  readonly id="infoPanel" name="infoPanel" placeholder="Info.." ></textarea>
+	<div style="text-align: center">
+      <input type="button" value="Reload">
+      <input type="button" value="Log">
+    </div>
+</div>
+
+</body>
 </html>

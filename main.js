@@ -233,9 +233,10 @@ const menu = Menu.buildFromTemplate(template);
 
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
-        fullscreen: true,
+        width: 600,
+        height: 500,
+        fullscreen: false,
+        resizable: false,
         sandbox: false,
         icon: path.join(__dirname, 'icons', 'example.png'),
         webPreferences: {

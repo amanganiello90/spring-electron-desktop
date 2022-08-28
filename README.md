@@ -2,7 +2,7 @@
 
 This is a project that run a spring boot jar (**app.jar**) in electron.
 
-You can view the server log in electron window, pressing a key from your keyboard (defined in **main.js**).
+You can use a panel to check state and execute some actions.
 
 # Prerequisites
 
@@ -16,11 +16,9 @@ npm install
 
 # Features
 
-In electron window, there are some menu under **"finestra"** label.
 It is possible to:
 
-* Reload entire window content and jar
-* Change windows view from server to/from client
+* Restart jar
 * Save a text file of server log
 
 Besides there are some checks:
