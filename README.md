@@ -14,6 +14,20 @@ You can view the server log in electron window, pressing a key from your keyboar
 npm install
 ```
 
+# Features
+
+In electron window, there are some menu under **"finestra"** label.
+It is possible to:
+
+* Reload entire window content and jar
+* Change windows view from server to/from client
+* Save a text file of server log
+
+Besides there are some checks:
+
+* Java installed on machine
+* automatic showing messages box for warnings and error
+
 ## Electron
 
 All generated packages will be under **out** folder

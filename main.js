@@ -2,17 +2,17 @@
 const { autoUpdater } = require('electron-updater');
 const url = require('url');
 const path = require('path');
+const fs = require('fs');
+
+let mainWindow;
 
 ///// for java process
 const { nextAvailable } = require('node-port-check');
 const child = require("child_process").spawn;
+const utils = require('./main-utils');
 let javaProcess;
-let mainWindow;
+let stringLogFile='';
 
-function strip(s) {
-    // regex from: http://stackoverflow.com/a/29497680/170217
-    return s.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
-}
 
 function sendServerOutToWin(log, eventName) {
     let lineBuffer = "";
@@ -21,11 +21,51 @@ function sendServerOutToWin(log, eventName) {
         let lines = lineBuffer.split("\n");
         lines.forEach(l => {
             if (l !== "") {
-                mainWindow.webContents.send(eventName, strip(l));
+                mainWindow.webContents.send(eventName, utils.strip(l));
+                stringLogFile=stringLogFile.concat(utils.strip(l)+'\n');
             }
         });
         lineBuffer = lines[lines.length - 1];
     });
+}
+
+
+function saveLogServer () {
+    dialog.showSaveDialog({
+        title: 'Seleziona la cartella dove salvare',
+        defaultPath: require('os').homedir(),
+        buttonLabel: 'Salva',
+        // choose only text files
+        filters: [
+            {
+                name: 'File di testo',
+                extensions: ['txt']
+            }, ],
+        properties: []
+    }).then(file => {
+        // check if canceled operation
+        if (!file.canceled) {
+              
+            // create and write file
+            fs.writeFile(file.filePath.toString(), 
+            stringLogFile, function (err) {
+                if (err) {
+                    dialog.showMessageBox({
+                        message: 'Errore nel salvataggio log',
+                        details: err.message,
+                        type: 'error'
+                    });
+                } else {
+                    dialog.showMessageBox({
+                        message: 'Log salvato con successo',
+                        type: 'info'
+                    });
+                }
+           
+            });
+        }
+    });
+
 }
 /////
 
@@ -101,6 +141,10 @@ const template = [
                         mainWindow.webContents.send("change-win-event");
                     }
                 }
+            },
+            {
+                label: 'Scarica log server',
+                click() { saveLogServer() }
             },
             {
                 label: 'Attiva devtools',
@@ -200,6 +244,7 @@ function createWindow() {
             webviewTag: true
         },
     });
+    mainWindow.webContents.session.clearCache();
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'index.html'),
         protocol: 'file:',
@@ -209,15 +254,27 @@ function createWindow() {
         mainWindow = null;
     });
     mainWindow.once('ready-to-show', () => {});
-    mainWindow.webContents.on('did-start-loading', (e) => {
-       if(javaProcess) {
-        javaProcess.kill('SIGINT');
-       }
+    mainWindow.webContents.on('did-start-loading', () => {
+        utils.killEventualJavaProcess(javaProcess);
       });
 }
 
 
 app.on('ready', () => {
+
+    utils.checkJava(err =>{
+        if(err) {
+            dialog.showMessageBox({
+                title: 'Errore Java',
+                message: 'Impossibile rilevare java',
+                details: 'Installare una valida versione',
+                type: 'error'
+            });
+            utils.killEventualJavaProcess(javaProcess);
+            app.exit();
+        }
+    });
+
     Menu.setApplicationMenu(menu);
     createWindow();
     // get available port from 8080
@@ -225,19 +282,34 @@ app.on('ready', () => {
         nextAvailable(8080, '0.0.0.0').then((nextAvailablePort) => {
             javaProcess = child("java", ["-jar", __dirname + "/app.jar", "--server.port=" + nextAvailablePort], {
                 cwd: process.cwd()
-            });
-
+            }).on('error', err => {
+                dialog.showMessageBox({
+                    message: 'Errore avvio processo java',
+                    details: err.message,
+                    type: 'error'
+                });
+                app.exit();
+            })
             sendServerOutToWin(javaProcess.stdout, 'server-log-event');
-            sendServerOutToWin(javaProcess.stderr, 'server-error-event');
+            sendServerOutToWin(javaProcess.stderr, 'server-log-event');
             event.returnValue = "http://localhost:" + nextAvailablePort;
 
         });
     })
 
+
+    ipcMain.on('timeout-event', (event, args) => {
+        dialog.showMessageBox({
+            message: 'Tempo di caricamento troppo lungo',
+            detail: 'Possibile errore: visiona il log accessibile dal menù finestra',
+            type: 'warning'
+        });
+        event.returnValue = 'null';
+    });
 });
 
 app.on('window-all-closed', function() {
-    javaProcess.kill('SIGINT');
+    utils.killEventualJavaProcess(javaProcess);
     app.quit();
 });
 
