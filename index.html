@@ -7,7 +7,9 @@
 body {background-color: #3232da;font-family: Arial, Helvetica, sans-serif;}
 * {box-sizing: border-box;}
 
-textarea {
+#infoPanel {
+  font-weight:bold;
+  background-color: white;
   text-align: center;
   width: 100%;
   height: 70vh;
@@ -44,17 +46,20 @@ input[type=button]:hover {
 
 
 <div class="container">
-
-    <script>
-        require('./renderer.js');
-    </script>
-
-    <textarea  readonly id="infoPanel" name="infoPanel" placeholder="Info.." ></textarea>
+ 
+    <div id="infoPanel">
+      <span>----AVVIO APP----<span></br>
+      <span >Attendere qualche secondo...<span></br>
+    </div>
 	<div style="text-align: center">
-      <input type="button" value="Reload">
-      <input type="button" value="Log">
+      <input type="button" onclick="renderFunc.restart()" value="Riavvia">
+      <input type="button" onclick="renderFunc.downloadLog()" value="Scarica Log">
+      <input type="button" onclick="renderFunc.openBrowser()" value="Apri browser">
     </div>
 </div>
+<script>
+  var renderFunc= require('./renderer.js');
+</script>
 
 </body>
 </html>

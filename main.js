@@ -14,14 +14,13 @@ let javaProcess;
 let stringLogFile='';
 
 
-function sendServerOutToWin(log, eventName) {
+function createLog(log) {
     let lineBuffer = "";
     log.on('data', function(data) {
         lineBuffer += data.toString();
         let lines = lineBuffer.split("\n");
         lines.forEach(l => {
             if (l !== "") {
-                mainWindow.webContents.send(eventName, utils.strip(l));
                 stringLogFile=stringLogFile.concat(utils.strip(l)+'\n');
             }
         });
@@ -75,113 +74,12 @@ if (require('electron-squirrel-startup')) return;
 
 const template = [
     {
-        label: 'Modifica',
-        submenu: [{
-                label: 'Annulla',
-                role: 'undo',
-                accelerator: 'CommandOrControl+Z',
-            },
-            {
-                label: 'Rifai',
-                accelerator: 'Shift+CommandOrControl+Z',
-                role: 'redo',
-            },
-            {
-                type: 'separator'
-            },
-            {
-                label: 'Taglia',
-                role: 'cut'
-            },
-            {
-                label: 'Copia',
-                accelerator: 'CommandOrControl+C',
-                role: 'copy',
-            },
-            {
-                label: 'Incolla',
-                accelerator: 'CommandOrControl+V',
-                role: 'paste',
-            },
-            {
-                label: 'Seleziona Tutto',
-                accelerator: 'CommandOrControl+A',
-                role: 'selectall',
-            },
-        ]
-    },
-    {
-        label: 'Finestra',
-        submenu: [
-            {
-                label: 'Indietro',
-                click () {
-                    if (mainWindow) {
-                        mainWindow.webContents.goBack();
-                    }
-                }
-            },
-            {
-                label: 'Avanti',
-                click () {
-                    if (mainWindow) {
-                        mainWindow.webContents.goForward();
-                    }
-                }
-            },
-            {
-                label: 'Ricarica',
-                role: 'reload'
-            },
-            {
-                label: 'Cambia vista client/server',
-                accelerator: 'CommandOrControl+B',
-                click() {
-                    if (mainWindow) {
-                        mainWindow.webContents.send("change-win-event");
-                    }
-                }
-            },
-            {
-                label: 'Scarica log server',
-                click() { saveLogServer() }
-            },
-            {
-                label: 'Attiva devtools',
-                role: 'toggledevtools'
-            },
-            {
-                label: 'Minimizza',
-                role: 'minimize'
-            },
-            {
-                label: 'Chiudi',
-                role: 'close'
-            },
-            {
-                type: 'separator'
-            },
-            {
-                label: 'Reset zoom',
-                role: 'resetzoom'
-            },
-            {
-                label: 'Ingrandisci',
-                role: 'zoomin'
-            },
-            {
-                label: 'Diminuisci',
-                role: 'zoomout'
-            }
-        ]
-    },
-    {
         label: 'Info',
         submenu: [{
                 label: 'Versione',
                 click() {
                     dialog.showMessageBox({
-                        message: 'Programma esempio spring electron desktop versione ' + app.getVersion(),
+                        message: 'Programma esempio spring electron console versione ' + app.getVersion(),
                         type: 'info'
                     });
                 }
@@ -212,13 +110,6 @@ const template = [
                 }
             }
         ],
-    },
-    {
-        label: 'Aiuto',
-        role: 'help',
-        submenu: [{
-            label: 'Learn More'
-        }]
     }
 ];
 
@@ -291,8 +182,8 @@ app.on('ready', () => {
                 });
                 app.exit();
             })
-            sendServerOutToWin(javaProcess.stdout, 'server-log-event');
-            sendServerOutToWin(javaProcess.stderr, 'server-log-event');
+            createLog(javaProcess.stdout);
+            createLog(javaProcess.stderr);
             event.returnValue = "http://localhost:" + nextAvailablePort;
 
         });
@@ -302,9 +193,19 @@ app.on('ready', () => {
     ipcMain.on('timeout-event', (event, args) => {
         dialog.showMessageBox({
             message: 'Tempo di caricamento troppo lungo',
-            detail: 'Possibile errore: visiona il log accessibile dal menù finestra',
+            detail: 'Possibile errore: visiona il log dal tasto apposito',
             type: 'warning'
         });
+        event.returnValue = 'null';
+    });
+
+    ipcMain.on('download-log-event', (event, args) => {
+        saveLogServer();
+        event.returnValue = 'null';
+    });
+
+    ipcMain.on('restart-event', (event, args) => {
+        mainWindow.reload();
         event.returnValue = 'null';
     });
 });

@@ -20,6 +20,7 @@ It is possible to:
 
 * Restart jar
 * Save a text file of server log
+* Open external browser
 
 Besides there are some checks:
 

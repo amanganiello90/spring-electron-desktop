@@ -66,7 +66,6 @@
   "dependencies": {
     "electron-squirrel-startup": "1.0.0",
     "electron-updater": "5.0.1",
-    "jquery": "3.6.0",
     "node-port-check": "2.0.1",
     "request": "2.88.2"
   }

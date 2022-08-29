@@ -1,43 +1,60 @@
-const { ipcRenderer} = require('electron');
+const { ipcRenderer, shell} = require('electron');
 const request = require('request');
-window.$ = window.jQuery = require('./node_modules/jquery/dist/jquery.min.js');
 
 const jarAppUrl = ipcRenderer.sendSync('server-host-event', '');
 let timeout =35 // timeout in seconds to show possible error during loading
 
-
-$serverLog = $("#serverLog");
-$jarApp = $("#jarAppId"),
-$loading = $("#loading");
-
-$serverLog.append("*********INIT LOG SERVER*********<br/>***********************************<br/>");
-
-ipcRenderer.on('change-win-event', () => {
-  if ($serverLog.css("display") === "none") {
-      $serverLog.css("display", "block");
-      $jarApp.addClass("jarAppHide");
-  } else {
-      $jarApp.removeClass("jarAppHide");
-      $serverLog.css("display", "none");
-  }
-});
-
-ipcRenderer.on('server-log-event', (event,log)  =>{
-  $serverLog.append(log + "<br/>");
-});
-
+let $infoPanel=document.getElementById('infoPanel');
+let javaUrlFromRenderer;
 
 
 let checkServerRunning = setInterval(() => {
   request(jarAppUrl, (error, response, body) => {
       timeout--;
       if (!error && response.statusCode == 200) {
-          $jarApp.attr("src", jarAppUrl);
-          $loading.css("display", "none");
-          $jarApp.css("display", "block");
-          clearInterval(checkServerRunning);
+        javaUrlFromRenderer=jarAppUrl;
+        $infoPanel.innerHTML=$infoPanel.innerHTML.concat(`<span style='color: blue'>App avviata su indirizzo browser: ${jarAppUrl}</span></br>`);
+        shell.openExternal(jarAppUrl);
+        clearInterval(checkServerRunning);
+        checkAfterRunning();
       } else if (timeout===0) {
-       ipcRenderer.sendSync('timeout-event', '');
+        $infoPanel.innerHTML=$infoPanel.innerHTML.concat("<span style='color: red'>Possibile errore. Riavvia o visualizza log</span></br>");
+        ipcRenderer.sendSync('timeout-event', '');
       }
   });
 }, 1000);
+
+// check after if the server go down
+function checkAfterRunning() {
+let checkServerAfterRun = setInterval(() => {
+  request(javaUrlFromRenderer, (error, response, body) => {
+      if (error || response.statusCode !== 200) {
+        javaUrlFromRenderer=null;
+        $infoPanel.innerHTML=$infoPanel.innerHTML.concat(`<span style='color: red'>App non più disponibile. Riavvia</span></br>`);
+        clearInterval(checkServerAfterRun);
+      }
+  });
+}, 15000);
+
+}
+
+
+/// javascript on click functions
+
+function restart() {
+  ipcRenderer.sendSync('restart-event', '');
+}
+
+function downloadLog() {
+  ipcRenderer.sendSync('download-log-event', '');
+}
+
+function openBrowser() {
+  if(javaUrlFromRenderer) {
+    shell.openExternal(javaUrlFromRenderer);
+  }
+}
+
+module.exports = {
+restart, downloadLog, openBrowser
+}
